@@ -1,58 +1,69 @@
-import React from 'react';
-import {Button, Container, Stack, styled, Typography} from "@mui/material";
+import React, {useState} from 'react';
+import {Box, Button, Container, styled} from "@mui/material";
 import QuizInfoCard from "../../components/quiz/info/QuizInfoCard";
 import {CloudUpload} from "@mui/icons-material";
 import * as consts from "../../helpers/consts";
 import QuizService from "../../api/QuizService";
 import {useNavigate} from "react-router-dom";
+import Inner from "../../components/ui/Inner";
+import IndentStack from "../../components/ui/IndentStack";
+import ProgressCircle from "../../components/ui/ProgressCircle";
 
-const QuizzesInfoPanel = ({quizInfos}) => {
+const QuizzesInfoPanel = ({quizInfos, toQuizResults}) => {
 
     const quizService = new QuizService();
     const navigate = useNavigate();
+    const [progressIsOpen, setProgressIsOpen] = useState(false);
 
     const handleUploadDocument = (event) => {
-        quizService.generateQuiz(event.target.files[0], afterResponse());
+        quizService.generateQuiz(event.target.files[0], afterResponse(), () => setProgressIsOpen(true));
     }
 
     function afterResponse() {
         return (data) => {
+            setProgressIsOpen(false);
             navigate(consts.links.QUIZ_CREATING, { state: { data: data}});
         };
     }
 
     return (
         <Container>
-            <Typography variant="h4">
-                Мои тесты
-            </Typography>
+            <Inner title='Мои тесты'>
+                <Box sx={{display:"flex", gap:2}}>
+                    <Button
+                        variant='outlined'
+                        href={consts.links.QUIZ_CREATING}
+                    >
+                        Создать
+                    </Button>
 
-            <Button
-                href={consts.links.QUIZ_CREATING}
-            >
-                Создать
-            </Button>
+                    <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUpload />}
+                    >
+                        Генерировать
+                        <VisuallyHiddenInput
+                            type="file"
+                            onChange={handleUploadDocument}
+                            multiple
+                        />
+                    </Button>
+                </Box>
+            </Inner>
 
-            <Button
-                component="label"
-                variant="contained"
-                startIcon={<CloudUpload />}
-            >
-                Генерирация AI
-                <VisuallyHiddenInput
-                    type="file"
-                    onChange={handleUploadDocument}
-                    multiple
-                />
-            </Button>
-
-            <Stack spacing={2} sx={{ mt:3 }}>
+            <IndentStack sx={{ mt:3 }}>
                 {
                     quizInfos.map((quizInfo) => {
-                        return <QuizInfoCard key={quizInfo.id} quizInfo={quizInfo} />
+                        return <QuizInfoCard
+                            key={quizInfo.id}
+                            quizInfo={quizInfo}
+                            toQuizResults={toQuizResults(quizInfo.id)}
+                        />
                     })
                 }
-            </Stack>
+            </IndentStack>
+            <ProgressCircle isOpen={progressIsOpen}/>
         </Container>
     );
 };

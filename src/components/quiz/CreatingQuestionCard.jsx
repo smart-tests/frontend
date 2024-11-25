@@ -90,11 +90,11 @@ const CreatingQuestionCard = ({question, changeQuestion, index, deleteQuestion})
         <CardContent>
             <Grid2 container sx={{ display:"flex", alignItems:"start", justifyContent:"space-between"}}>
 
-                <Grid2 size={{ xs: 5}}>
+                <Grid2 size={{ xs: 9}}>
                     <Typography variant="h6">Вопрос {index + 1}</Typography>
                 </Grid2>
 
-                <Grid2 size={{ xs: 3}}>
+                <Grid2 size={{ xs: 1}}>
                     <FormControl>
                         <InputLabel>Тип ответа</InputLabel>
                         <Select
@@ -111,11 +111,7 @@ const CreatingQuestionCard = ({question, changeQuestion, index, deleteQuestion})
                     </FormControl>
                 </Grid2>
 
-                <Grid2 size={{ xs: 3}}>
-                    <TextField size="small" label="Количество баллов"/>
-                </Grid2>
-
-                <Grid2 size={{ xs: 1}} sx={{ textAlign:"end"}}>
+                <Grid2 size={{ xs: 2}} sx={{ textAlign:"end"}}>
                     <IconButton color="warning" variant="contained" onClick={handleDeleteButton}>
                         <DeleteForever />
                     </IconButton>

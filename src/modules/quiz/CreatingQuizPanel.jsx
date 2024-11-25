@@ -3,11 +3,14 @@ import {Backdrop, Box, Button, Card, CardContent, CircularProgress, Container, S
 import CreatingQuestionCard from "../../components/quiz/CreatingQuestionCard";
 import * as quizHelper from "../../helpers/quizHelper";
 import { saveQuiz as backendSaveQuiz } from "../../api/QuizService";
+import {useNavigate} from "react-router-dom";
+import * as consts from "../../helpers/consts";
 
 const CreatingQuizPanel = ({ data }) => {
     const [quiz, setQuiz] = useState(data);
     const [progressOpen, setProgressOpen] = useState(false);
     const [errorTitle, setErrorTitle] = useState(false);
+    let navigate = useNavigate();
 
     function saveQuiz() {
         if (!isQuizCorrect()) return;
@@ -15,7 +18,10 @@ const CreatingQuizPanel = ({ data }) => {
 
         backendSaveQuiz(quiz,
             () => setProgressOpen(true),
-            () => setProgressOpen(false),
+            (_) => {
+                setProgressOpen(false);
+                toUserCreatedQuizzes();
+            },
             (err) => console.log(err));
     }
 
@@ -28,14 +34,15 @@ const CreatingQuizPanel = ({ data }) => {
         return true;
     }
 
+    function toUserCreatedQuizzes() {
+        navigate(consts.links.USER_CREATED_QUIZZES);
+    }
+
     function changeQuestion(index) {
         const questionIndex = index;
 
         return (newQuestion) => {
             setQuiz(prev => {
-                console.log("PREV")
-                console.log(prev)
-
                 prev.questions[questionIndex] = newQuestion;
                 return prev;
             });
@@ -48,7 +55,6 @@ const CreatingQuizPanel = ({ data }) => {
         return () => {
             setQuiz(prev => {
                 const newQuiz = structuredClone(prev);
-                console.log(newQuiz);
                 newQuiz.questions.splice(questionIndex, 1);
 
                 return newQuiz;

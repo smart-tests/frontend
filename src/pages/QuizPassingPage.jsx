@@ -1,12 +1,51 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from "../modules/Header";
-import * as quizMock from "../mocks/quizMock";
 import QuizQuestion from "../components/quiz/passing/QuizQuestion";
-import {Button, Container, Stack, Typography} from "@mui/material";
+import {Button, Container, Typography} from "@mui/material";
+import useAuth from "../utils/hooks/useAuth";
+import {useNavigate, useParams} from "react-router-dom";
+import {checkPassedQuiz, getQuizForPassing} from "../api/QuizService";
+import Inner from "../components/ui/Inner";
+import IndentStack from "../components/ui/IndentStack";
+import {links} from "../helpers/consts";
 
 const QuizPassingPage = () => {
-    const quiz = quizMock.passingQuiz;
+    const {user} = useAuth();
+    const {id} = useParams();
+    const [quiz, setQuiz] = useState(null);
     const answers = [];
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        getQuiz();
+    }, []);
+
+    function getQuiz() {
+        getQuizForPassing(
+            id,
+            () => {},
+            (data) => {setQuiz(data)},
+            () => {}
+        )
+    }
+
+    function toQuizzesForPassing() {
+        navigate(links.QUIZZES_FOR_PASSING);
+    }
+
+    function finishQuiz() {
+        const request = {
+            questions: answers
+        }
+
+        checkPassedQuiz(
+            id,
+            request,
+            () => {},
+            toQuizzesForPassing,
+            () => {}
+        );
+    }
 
     function addAnswer(newAnswer) {
         let index = answers.findIndex(answer => answer.id === newAnswer.id);
@@ -22,14 +61,19 @@ const QuizPassingPage = () => {
 
     return (
         <div>
-            <Header />
-
-            <QuizPassingInfo title={quiz.title} theme={quiz.theme} totalQuestions={quiz.questions.length}/>
+            <Header user={user}/>
 
             <Container sx={{ display:"flex", flexDirection:"column", justifyContent:"center"}}>
-                <Stack spacing={3}>
+
+                <Inner title={quiz?.title}>
+                    <Typography>
+                        Всего вопросов: {quiz?.questions.length}
+                    </Typography>
+                </Inner>
+
+                <IndentStack>
                     {
-                        quiz.questions.map((question, i) => {
+                        quiz?.questions.map((question, i) => {
                             return <QuizQuestion
                                 question={question}
                                 index={i}
@@ -37,24 +81,14 @@ const QuizPassingPage = () => {
                                 key={question.id} />
                         })
                     }
-                </Stack>
+                </IndentStack>
 
-                <Button sx={{ mt:3 }}>
+                <Button onClick={finishQuiz} sx={{ mt:3 }}>
                     Завершить тест
                 </Button>
             </Container>
         </div>
     );
 };
-
-const QuizPassingInfo = ({title, theme, totalQuestions}) => {
-    return (
-        <Container>
-            <Typography>{title}</Typography>
-            <Typography>{theme}</Typography>
-            <Typography>{totalQuestions}</Typography>
-        </Container>
-    );
-}
 
 export default QuizPassingPage;
